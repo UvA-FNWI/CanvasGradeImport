@@ -1,6 +1,7 @@
 import {parseFile} from "parseFile";
-import {getAssignments, putSubmission} from "canvasApi";
+import {getAssignments} from "canvasApi";
 import {Assignment} from "models/Assignment";
+import {importGrades} from "importGrades";
 
 $('p').remove();
 $('.ic-Form-actions').remove();
@@ -25,10 +26,13 @@ function renderImportSteps(data: Uint8Array) {
   const { sheetNames, readSheet } = parseFile(data);
 
   $('#new_gradebook_upload').parent().append(`
-    <div style="display: ${sheetNames.length === 1 ? 'none' : 'block'}">
-      Sheet: <select id="sheetSelector">
-        ${sheetNames.map((n,i) => `<option selected="${i === 0}" value="${n}">${n}</option>`).join("")}
-      </select>
+    <div class="control-group" style="display: ${sheetNames.length === 1 ? 'none' : 'block'}">
+      <label class="control-label" for="sheetSelector">Sheet: </label>
+      <div class="controls">
+        <select id="sheetSelector">
+          ${sheetNames.map((n,i) => `<option ${i === 0 ? "selected" : ""} value="${n}">${n}</option>`).join("")}
+        </select>
+      </div>
     </div>
     <table>
       <thead style="text-align: left"><tr>
@@ -37,10 +41,11 @@ function renderImportSteps(data: Uint8Array) {
       </tr></thead>
       <tbody id="columnMapping" />
     </table>
-    <div>
+    <div style="margin-top: 20px; margin-bottom: 20px;">
       <button class="btn btn-primary" id="startImport">Import data</button>
     </div>
     <div id="progress" style="font-style: italic"></div>
+    <ul id="errorList"></ul>
   `);
 
   const selector = document.getElementById("sheetSelector") as HTMLSelectElement;
@@ -64,6 +69,7 @@ function updateColumnMapping(columns: string[]) {
   if (!studentId)
     studentId = cols.filter(c => c.value.includes("student"))[0]?.index;
 
+  resetProgress();
   el.innerHTML = columns.map((c,i) => `<tr>
     <td>${c}</td>
     <td>
@@ -86,40 +92,34 @@ async function startImport({ columns, rows }: { columns: string[], rows: string[
     return;
   }
   const button = document.getElementById("startImport") as HTMLButtonElement;
-  const progress = document.getElementById("progress");
+  const { progress, errorList } = resetProgress();
   const studentIndex = choices.filter(c => c.targetId === -1)[0].index;
   button.disabled = true;
 
   const submissions = choices
     .filter(c => c.targetId > 0)
     .flatMap(c => rows.filter(r => !!r[c.index]).map(r => ({
-      grade: formatGrade(r[c.index]),
+      grade: r[c.index],
       assignmentId: c.targetId,
-      studentId: r[studentIndex].toString().padStart(7, "0")
+      studentId: r[studentIndex]
     })));
 
-  let errors = 0;
-
-  for (let i = 0; i < submissions.length; i++) {
-    progress.innerText = `Importing grade ${i + 1} out of ${submissions.length}`;
-    const sub = submissions[i];
-    try {
-      await putSubmission(sub.assignmentId, sub.studentId, {posted_grade: sub.grade});
-    } catch {
-      errors++;
-    }
-  }
+  const { success, errors } = await importGrades(submissions,
+      p => `Importing grade ${p} out of ${submissions.length}`);
 
   button.disabled = false;
-  if (errors === 0) {
-    progress.innerText = `${submissions.length} grades imported successfully`;
+  if (errors.length === 0) {
+    progress.innerText = `${success} grades imported successfully`;
   } else {
-    progress.innerText = `${submissions.length} grades imported, ${errors} errors`;
+    progress.innerText = `${success} grades imported, ${errors.length} errors:`;
   }
+  errorList.innerHTML = errors.map(e => `<li>${e}</li>`).join("");
 }
 
-function formatGrade(grade: string) {
-  return grade.toString().toLowerCase().replace(",", ".")
-    .replace("avv", "complete").replace("nav", "incomplete")
-    .replace("pass", "complete").replace("fail", "incomplete");
+function resetProgress() {
+  const progress = document.getElementById("progress");
+  const errorList = document.getElementById("errorList");
+  progress.innerText = "";
+  errorList.innerHTML = "";
+  return { progress, errorList };
 }

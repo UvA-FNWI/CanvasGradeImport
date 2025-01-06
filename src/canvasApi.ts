@@ -25,6 +25,7 @@ export const putSubmission = async (assignmentId: number, sisUserId: string, sub
     body: JSON.stringify({ submission }),
     headers
   });
-  if (res.status >= 400) throw new Error(res.statusText);
-  return await res.json() as Submission;
+  if (res.status >= 400)
+    return { error: res };
+  return { submission: await res.json() as Submission };
 }
