@@ -1,4 +1,4 @@
-import {read, utils} from "xlsx";
+import {read, utils} from '../node_modules/xlsx/dist/xlsx.mini.min';
 
 export const parseFile = (data: Uint8Array) => {
   const book = read(data, {type: 'array'});

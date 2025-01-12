@@ -1,0 +1,4 @@
+hostname: canvasimport.local
+ingressClass: nginx
+tag: latest
+registry: fnwicr.azurecr.io

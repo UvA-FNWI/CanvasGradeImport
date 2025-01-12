@@ -1,5 +1,5 @@
 import {courseId, getAssignments, getSections, getStudents, getSubmissions} from "canvasApi";
-import {utils, writeFile} from "xlsx";
+import {utils, writeFile} from '../node_modules/xlsx/dist/xlsx.mini.min';
 
 const button = document.querySelector("button[data-position-target='export_btn']");
 button.addEventListener("click", () => setTimeout(() => {

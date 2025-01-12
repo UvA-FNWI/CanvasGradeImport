@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: canvasimport
+  namespace: "{{ .Release.Namespace }}"
+spec:
+  selector:
+    matchLabels:
+      app: canvasimport
+  replicas: 1
+  revisionHistoryLimit: 3
+  template:
+    metadata:
+      labels:
+        app: canvasimport
+    spec:
+      containers:
+        - name: canvasimport
+          image: "{{ .Values.registry }}/canvasimport:{{ .Values.tag }}"
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80
+          env:
+            - name: CANVASIMPORT_VERSION
+              value: "{{ .Chart.AppVersion }}"
