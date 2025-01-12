@@ -41,4 +41,4 @@ jobs:
           helm package --version "${VERSION}" --app-version "${VERSION}" charts/canvasimport
           helm push "canvasimport-${VERSION}.tgz" oci://${{ env.REGISTRY }}/helm
           
-          curl "https://k8s.datanose.nl/gitops-updater?name=canvasimport&secret=${UPDATER_SECRET}&version=${VERSION}"
+          curl "https://k8s.datanose.nl/gitops-updater?name=canvastools&secret=${UPDATER_SECRET}&version=${VERSION}"

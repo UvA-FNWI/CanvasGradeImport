@@ -1,8 +1,14 @@
 import {courseId, getAssignments, getSections, getStudents, getSubmissions} from "canvasApi";
 import {utils, writeFile} from '../node_modules/xlsx/dist/xlsx.mini.min';
 
-const button = document.querySelector("button[data-position-target='export_btn']");
-button.addEventListener("click", () => setTimeout(() => {
+const interval = setInterval(() => {
+  const button = document.querySelector("button[data-position-target='export_btn']");
+  if (!button) return;
+  button.addEventListener("click", () => setTimeout(() => setUpExport(), 100));
+  clearInterval(interval);
+}, 200)
+
+function setUpExport() {
   const target = $("span[data-position-content='export_btn'] ul");
   if (!target.length) return;
 
@@ -52,4 +58,4 @@ button.addEventListener("click", () => setTimeout(() => {
     item.style.fontStyle = "inherit";
     (item.parentNode.parentNode as HTMLElement).style.pointerEvents = "inherit";
   });
-}, 100));
+}
