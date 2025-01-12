@@ -37,7 +37,7 @@ function renderImportSteps(data: Uint8Array) {
     <table>
       <thead style="text-align: left"><tr>
         <th>Column</th>
-        <th>Target</th>
+        <th>Target assignment</th>
       </tr></thead>
       <tbody id="columnMapping" />
     </table>

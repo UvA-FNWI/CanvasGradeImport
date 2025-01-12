@@ -2,7 +2,10 @@ const path = require('path');
 
 module.exports = {
     mode: 'development',
-    entry: './src/index.ts',
+    entry: {
+        import: { import: './src/index.ts', filename: 'import.js'},
+        export: { import: './src/export.ts', filename: 'export.js'}
+    },
     module: {
         rules: [{
             test: /\.tsx?$/,
@@ -18,7 +21,6 @@ module.exports = {
         ]
     },
     output: {
-        filename: 'import.js',
         path: path.resolve(__dirname, 'dist'),
     },
 };
