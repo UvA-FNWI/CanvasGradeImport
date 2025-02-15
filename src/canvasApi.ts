@@ -36,6 +36,17 @@ export const getAssignments = async () => {
   return assignments.filter(a => a.published);
 }
 
+export const createAssignment = async (name: string) => {
+  const res = await fetch(`${base}/courses/${courseId}/assignments`, {
+    method: "POST",
+    body: JSON.stringify({ assignment: { name, published: true }}),
+    headers
+  });
+  if (res.status >= 400)
+    return { error: res };
+  return { assignment: await res.json() as Assignment };
+}
+
 export const getSections = () =>
   getCollection<Section>(`${base}/courses/${courseId}/sections`);
 

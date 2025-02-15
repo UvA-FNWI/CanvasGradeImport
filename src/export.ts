@@ -15,15 +15,15 @@ function setUpExport() {
   const class1 = target.find("li > span").attr("class")
   const class2 = target.find("li > span > span > span").attr("class")
 
-  target.prepend(`<li id="excelExport">
-    <span class='${class1}'>
+  target.prepend(`<li role="none" id="excelExport">
+    <span tabindex="0" role="menuitem" class='${class1}' aria-labelledby="excelExportMenuItem">
       <span>
         <span id="excelExportMenuItem" class='${class2}'>
           Export to Excel
         </span>
       </span>
     </span>
-  <li>`);
+  </li>`);
 
   document.getElementById("excelExport").addEventListener("click", async () => {
     const item = document.getElementById("excelExportMenuItem");

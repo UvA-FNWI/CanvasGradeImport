@@ -22,7 +22,7 @@ export const importGrades = async (grades: Grade[], progress: (p: number) => voi
     if (error?.status === 404) {
       errors.push(`Student ${sub.studentId} not found`);
     }
-    else if (submission && submission.grade !== formatted) {
+    else if (submission && submission.grade !== formatted && submission.grade + ".0" !== formatted) {
       errors.push(`Invalid grade for ${sub.studentId}: ${formatted}`);
     } else {
       success++;

@@ -1,11 +1,12 @@
 import {parseFile} from "parseFile";
-import {getAssignments} from "canvasApi";
+import {createAssignment, getAssignments} from "canvasApi";
 import {Assignment} from "models/Assignment";
 import {importGrades} from "importGrades";
 
 $('p').remove();
 $('.ic-Form-actions').remove();
-$('label.ic-Label').text("Choose an Excel or comma-separated file to upload:")
+$('label.ic-Label').text("Choose an Excel or comma-separated file to upload:");
+$('#new_gradebook_upload').parent().append("<div id='upload-form'></div>");
 
 let assignments: Assignment[] = [];
 getAssignments().then(res => assignments = res);
@@ -25,7 +26,7 @@ fileEl.addEventListener("change", () => {
 function renderImportSteps(data: Uint8Array) {
   const { sheetNames, readSheet } = parseFile(data);
 
-  $('#new_gradebook_upload').parent().append(`
+  document.getElementById("upload-form").innerHTML = `
     <div class="control-group" style="display: ${sheetNames.length === 1 ? 'none' : 'block'}">
       <label class="control-label" for="sheetSelector">Sheet: </label>
       <div class="controls">
@@ -46,7 +47,7 @@ function renderImportSteps(data: Uint8Array) {
     </div>
     <div id="progress" style="font-style: italic"></div>
     <ul id="errorList"></ul>
-  `);
+  `;
 
   const selector = document.getElementById("sheetSelector") as HTMLSelectElement;
 
@@ -77,6 +78,7 @@ function updateColumnMapping(columns: string[]) {
         <option value="0"></option>
         <option value="-1" ${studentId === i ? "selected" : ""}>[student id]</option>
         ${assignments.map(a => `<option value="${a.id}" ${a.name.toLowerCase() === c ? "selected" : ""}>${a.name}</option>`)}
+        <option value="-2">[new assignment]</option>
       </select>
     </td>
   </tr>`).join("");
@@ -96,6 +98,17 @@ async function startImport({ columns, rows }: { columns: string[], rows: string[
   const studentIndex = choices.filter(c => c.targetId === -1)[0].index;
   button.disabled = true;
 
+  for (const newAssignment of choices.filter(c => c.targetId === -2)) {
+    progress.innerText = "Creating assignments";
+    const res = await createAssignment(columns[newAssignment.index]);
+    if (res.error) {
+      progress.innerText = `Failed to create ${columns[newAssignment.index]}: ${await res.error.text()}`;
+      button.disabled = false;
+      return;
+    }
+    newAssignment.targetId = res.assignment.id;
+  }
+
   const submissions = choices
     .filter(c => c.targetId > 0)
     .flatMap(c => rows.filter(r => !!r[c.index]).map(r => ({
@@ -105,7 +118,7 @@ async function startImport({ columns, rows }: { columns: string[], rows: string[
     })));
 
   const { success, errors } = await importGrades(submissions,
-      p => `Importing grade ${p} out of ${submissions.length}`);
+      p => progress.innerText = `Importing grade ${p} out of ${submissions.length}`);
 
   button.disabled = false;
   if (errors.length === 0) {
