@@ -1,5 +1,6 @@
 import {courseId, getAssignments, getSections, getStudents, getSubmissions} from "canvasApi";
 import {utils, writeFile} from '../node_modules/xlsx/dist/xlsx.mini.min';
+import {Submission} from "models/Submission";
 
 const interval = setInterval(() => {
   const button = document.querySelector("button[data-position-target='export_btn']");
@@ -25,6 +26,13 @@ function setUpExport() {
     </span>
   </li>`);
 
+  const formatSubmission = (sub?: Submission) => {
+    if (!sub) return "";
+    if (sub.excused) return "excused";
+    if (!sub.grade && sub.submitted_at) return "<not yet graded>";
+    return sub.grade;
+  }
+
   document.getElementById("excelExport").addEventListener("click", async () => {
     const item = document.getElementById("excelExportMenuItem");
 
@@ -44,8 +52,8 @@ function setUpExport() {
       studentMap.get(group.user_id)?.sis_user_id,
       studentMap.get(group.user_id)?.sortable_name,
       sectionNames.get(group.section_id),
-      ...assignments.map(a => group.submissions.filter(s => s.assignment_id === a.id)[0]?.grade)
-    ]);
+      ...assignments.map(a => formatSubmission(group.submissions.filter(s => s.assignment_id === a.id)[0]))
+    ]).filter(s => s[0]);
 
     const header = ["Student ID", "Name", "Section", ...assignments.map(a => a.name)];
 

@@ -1,5 +1,5 @@
 import {parseFile} from "parseFile";
-import {createAssignment, getAssignments} from "canvasApi";
+import {courseId, createAssignment, getAssignments} from "canvasApi";
 import {Assignment} from "models/Assignment";
 import {importGrades} from "importGrades";
 
@@ -47,6 +47,7 @@ function renderImportSteps(data: Uint8Array) {
     </div>
     <div id="progress" style="font-style: italic"></div>
     <ul id="errorList"></ul>
+    <div id="backlink" style="display: none; margin-top: 15px;"><a href="/courses/${courseId}/grades">Back to gradebook</a></div>
   `;
 
   const selector = document.getElementById("sheetSelector") as HTMLSelectElement;
@@ -72,12 +73,12 @@ function updateColumnMapping(columns: string[]) {
 
   resetProgress();
   el.innerHTML = columns.map((c,i) => `<tr>
-    <td>${c}</td>
+    <td style="padding-right: 10px">${c}</td>
     <td>
       <select id="mapping_${i}">
         <option value="0"></option>
         <option value="-1" ${studentId === i ? "selected" : ""}>[student id]</option>
-        ${assignments.map(a => `<option value="${a.id}" ${a.name.toLowerCase() === c ? "selected" : ""}>${a.name}</option>`)}
+        ${assignments.map(a => `<option value="${a.id}" ${a.name.toLowerCase() === c.toLowerCase() ? "selected" : ""}>${a.name}</option>`)}
         <option value="-2">[new assignment]</option>
       </select>
     </td>
@@ -127,6 +128,7 @@ async function startImport({ columns, rows }: { columns: string[], rows: string[
     progress.innerText = `${success} grades imported, ${errors.length} errors:`;
   }
   errorList.innerHTML = errors.map(e => `<li>${e}</li>`).join("");
+  document.getElementById("backlink").style.display = "block";
 }
 
 function resetProgress() {

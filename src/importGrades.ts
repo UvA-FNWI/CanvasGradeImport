@@ -23,7 +23,7 @@ export const importGrades = async (grades: Grade[], progress: (p: number) => voi
       errors.push(`Student ${sub.studentId} not found`);
     }
     else if (submission && submission.grade !== formatted && submission.grade + ".0" !== formatted) {
-      errors.push(`Invalid grade for ${sub.studentId}: ${formatted}`);
+      errors.push(`Invalid grade for ${sub.studentId}: ${formatted} (imported as ${submission.grade})`);
     } else {
       success++;
     }
@@ -33,9 +33,18 @@ export const importGrades = async (grades: Grade[], progress: (p: number) => voi
 }
 
 function formatGrade(grade: string) {
-  return grade.toString().toLowerCase().replace(",", ".")
+  let str = grade.toString().toLowerCase().replace(",", ".")
     .replace("avv", "complete").replace("nav", "incomplete")
     .replace("pass", "complete").replace("fail", "incomplete");
+  if (str.includes('.')) {
+    while (str.length && str[str.length - 1] == '0') {
+      str = str.substring(0, str.length - 1);
+    }
+    if (str[str.length - 1] == '.') {
+      str = str.substring(0, str.length - 1);
+    }
+  }
+  return str;
 }
 
 function onlyUnique<T>(value: T, index: number, array: T[]) {

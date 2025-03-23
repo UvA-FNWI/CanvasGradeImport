@@ -1,7 +1,9 @@
 export interface Submission {
+  id?: string;
   grade?: string;
+  submitted_at?: string;
   posted_grade: string;
-  excuse?: boolean;
+  excused?: boolean;
   assignment_id?: number;
 }
 
