@@ -10,21 +10,21 @@ const interval = setInterval(() => {
 }, 200)
 
 function setUpExport() {
-  const target = $("span[data-position-content='export_btn'] ul");
+  const target = $("span[data-position-content='export_btn'] div");
   if (!target.length) return;
 
-  const class1 = target.find("li > span").attr("class")
-  const class2 = target.find("li > span > span > span").attr("class")
+  const class1 = target.find("span").attr("class")
+  const class2 = target.find("span > span > span").attr("class")
 
-  target.prepend(`<li role="none" id="excelExport">
-    <span tabindex="0" role="menuitem" class='${class1}' aria-labelledby="excelExportMenuItem">
+  target.prepend(`
+    <span id="excelExport" tabindex="0" role="menuitem" class='${class1}' aria-labelledby="excelExportMenuItem">
       <span>
         <span id="excelExportMenuItem" class='${class2}'>
           Export to Excel
         </span>
       </span>
     </span>
-  </li>`);
+  `);
 
   const formatSubmission = (sub?: Submission) => {
     if (!sub) return "";
