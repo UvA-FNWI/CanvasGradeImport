@@ -3,7 +3,7 @@ import {courseId, createAssignment, getAssignments} from "canvasApi";
 import {Assignment} from "models/Assignment";
 import {importGrades} from "importGrades";
 
-$('p').remove();
+$('p').text("Please treat all files containing student grades as confidential. Remove them from your device once all data is in Canvas.");
 $('.ic-Form-actions').remove();
 $('label.ic-Label').text("Choose an Excel or comma-separated file to upload:");
 $('#new_gradebook_upload').parent().append("<div id='upload-form'></div>");
