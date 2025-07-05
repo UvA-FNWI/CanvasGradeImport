@@ -85,7 +85,7 @@ function updateColumnMapping(columns: string[]) {
   </tr>`).join("");
 }
 
-async function startImport({ columns, rows }: { columns: string[], rows: string[][] }) {
+async function startImport({ columns, rows }: { columns: string[], rows: any[][] }) {
   const choices = columns.map((_, i) => ({
     index: i,
     targetId: +(document.getElementById(`mapping_${i}`) as HTMLSelectElement).value,
@@ -112,7 +112,7 @@ async function startImport({ columns, rows }: { columns: string[], rows: string[
 
   const submissions = choices
     .filter(c => c.targetId > 0)
-    .flatMap(c => rows.filter(r => !!r[c.index]).map(r => ({
+    .flatMap(c => rows.filter(r => !!r[c.index] || r[c.index] === 0).map(r => ({
       grade: r[c.index],
       assignmentId: c.targetId,
       studentId: r[studentIndex]
