@@ -55,13 +55,12 @@ function setUpExport() {
       ...assignments.map(a => formatSubmission(group.submissions.filter(s => s.assignment_id === a.id)[0]))
     ]).filter(s => s[0]);
 
-    const warning = ["PLEASE TREAT THE DOWNLOADED INFORMATION AS CONFIDENTIAL AND DELETE THE FILE FROM YOUR DEVICE WHEN YOU ARE DONE"];
     const header = ["Student ID", "Name", "Section", ...assignments.map(a => a.name)];
 
-    const sheet = utils.aoa_to_sheet([warning, header, ...rows]);
+    const sheet = utils.aoa_to_sheet([header, ...rows]);
     const book = utils.book_new();
     utils.book_append_sheet(book, sheet, "Grade export");
-    writeFile(book, `grade_export_${courseId}.xlsx`);
+    writeFile(book, `grade_export_${courseId}_DeleteAfterUse.xlsx`);
 
     item.innerText = "Export to Excel";
     item.style.fontStyle = "inherit";
