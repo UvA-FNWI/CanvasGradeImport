@@ -16,7 +16,7 @@ export const importGrades = async (grades: Grade[], progress: (p: number) => voi
     const formatted = formatGrade(sub.grade);
     const { error, submission } = await putSubmission(
       sub.assignmentId,
-      sub.studentId.toString().padStart(7, "0"),
+      sub.studentId?.toString().padStart(7, "0"),
       {posted_grade: formatted}
     );
     if (error?.status === 404) {
@@ -32,8 +32,8 @@ export const importGrades = async (grades: Grade[], progress: (p: number) => voi
   return { success, errors: errors.filter(onlyUnique) };
 }
 
-function formatGrade(grade: string) {
-  let str = grade.toString().toLowerCase().replace(",", ".")
+function formatGrade(grade: string | undefined) {
+  let str = grade?.toString().toLowerCase().replace(",", ".")
     .replace("avv", "complete").replace("nav", "incomplete")
     .replace("pass", "complete").replace("fail", "incomplete");
   if (str.includes('.')) {
