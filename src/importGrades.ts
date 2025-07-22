@@ -14,9 +14,13 @@ export const importGrades = async (grades: Grade[], progress: (p: number) => voi
     progress(i+1);
     const sub = grades[i];
     const formatted = formatGrade(sub.grade);
+    let studentId = sub.studentId?.toString().padStart(7, "0");
+    while (studentId?.length > 7 && studentId[0] === '0') {
+      studentId = studentId.slice(1);
+    }
     const { error, submission } = await putSubmission(
       sub.assignmentId,
-      sub.studentId?.toString().padStart(7, "0"),
+      studentId,
       {posted_grade: formatted}
     );
     if (error?.status === 404) {
