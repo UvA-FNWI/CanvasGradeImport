@@ -65,7 +65,7 @@ function renderImportSteps(data: Uint8Array) {
 
 function updateColumnMapping(columns: string[]) {
   const el = document.getElementById("columnMapping");
-  const cols = columns.map((c, index) => ({ index, value: c.toLowerCase() }));
+  const cols = (columns ?? []).map((c, index) => ({ index, value: c.toLowerCase() }));
   let studentId = cols.filter(c => c.value.includes("student id")
     || c.value.includes("student number") || c.value.includes("studentnummer"))[0]?.index;
   if (!studentId)
