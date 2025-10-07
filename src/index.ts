@@ -72,7 +72,7 @@ function updateColumnMapping(columns: string[]) {
     studentId = cols.filter(c => c.value.includes("student"))[0]?.index;
 
   resetProgress();
-  el.innerHTML = columns.map((c,i) => `<tr>
+  el.innerHTML = (columns ?? []).map((c,i) => `<tr>
     <td style="padding-right: 10px">${c}</td>
     <td>
       <select id="mapping_${i}">
