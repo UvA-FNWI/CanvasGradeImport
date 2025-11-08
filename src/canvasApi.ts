@@ -54,7 +54,7 @@ export const getStudents = () =>
   getCollection<User>(`${base}/courses/${courseId}/users?enrollment_type[]=student`);
 
 export const getSubmissions = () =>
-  getCollection<SubmissionGroup>(`${base}/courses/${courseId}/students/submissions?grouped=true&student_ids[]=all&response_fields[]=assignment_id&exclude_response_fields[]=preview_url&response_fields[]=grade&response_fields[]=excused&response_fields[]=submitted_at`);
+  getCollection<SubmissionGroup>(`${base}/courses/${courseId}/students/submissions?grouped=true&student_ids[]=all&response_fields[]=assignment_id&exclude_response_fields[]=preview_url&response_fields[]=grade&response_fields[]=score&response_fields[]=excused&response_fields[]=submitted_at`);
 
 export const putSubmission = async (assignmentId: number, sisUserId: string, submission: Submission) => {
   const res = await fetch(`${base}/courses/${courseId}/assignments/${assignmentId}/submissions/sis_user_id:${sisUserId}`, {
