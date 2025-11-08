@@ -30,6 +30,7 @@ function setUpExport() {
     if (!sub) return "";
     if (sub.excused) return "excused";
     if (!sub.grade && sub.submitted_at) return "<not yet graded>";
+    if (sub.score && sub.score.toString().replace(",", ".") === sub.grade.replace(",", ".")) return sub.score;
     return sub.grade;
   }
 
