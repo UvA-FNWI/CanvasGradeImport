@@ -47,10 +47,11 @@ sync_with_github:
 
     # Only push if something actually changed
     - |
-      if git diff --quiet HEAD@{1} HEAD; then
-        echo "No changes from GitHub to sync."
+      # Only commit if there are real changes after the merge
+      if [ -n "$(git status --porcelain)" ]; then
+        git commit -am "[SYNC] GitLab <-> GitHub sync"
       else
-        git commit -am "[SYNC] GitLab ↔ GitHub sync"
+        echo "No changes from GitHub to sync."
       fi
 
     # Push to GitHub
