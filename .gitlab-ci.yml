@@ -27,7 +27,9 @@ sync_with_github:
 
   script:
     - set -e
-    - apk add --no-cache git
+
+    # Install dependencies
+    - apk add --no-cache git curl jq
 
     - git config user.name "GitLab CI Mirror"
     - git config user.email "noreply@gitlab-mirror.local"
@@ -35,17 +37,17 @@ sync_with_github:
     # Add GitHub remote (safe if already exists)
     - git remote add github https://$GITHUB_MIRROR_USER:$GITHUB_MIRROR_TOKEN@github.com/UvA-FNWI/CanvasGradeImport.git || true
 
-    # Fetch latest state
+    # Fetch both remotes
     - git fetch origin
     - git fetch github
 
-    # Ensure correct branch
+    # Create/reset local main branch from GitLab
     - git checkout -B main origin/main
 
-    # Merge GitHub → GitLab (fail loudly on conflict)
+    # Merge GitHub main into GitLab main (allow unrelated histories on first merge) (fail loudly on conflict)
     - git merge github/main --no-edit || git merge github/main --allow-unrelated-histories --no-edit
 
-    # Only push if something actually changed
+    # Only commit if something actually changed
     - |
       # Only commit if there are real changes after the merge
       if [ -n "$(git status --porcelain)" ]; then
@@ -54,11 +56,19 @@ sync_with_github:
         echo "No changes from GitHub to sync."
       fi
 
-    # Push to GitHub
-    - git push github main:mirror-sync
+    # Push to a PR branch on GitHub instead of main
+    - git push github main:mirror-sync -f
 
-    # Create pull request
-    - curl -X POST -H "Authorization: token $GITHUB_MIRROR_TOKEN" \
-     -d '{"title":"[SYNC] GitLab → GitHub","head":"mirror-sync","base":"main"}' \
-     https://api.github.com/repos/UvA-FNWI/CanvasGradeImport/pulls
-
+    # Check if a PR already exists from mirror-sync → main
+    #- |
+    #  PR_EXISTS=$(curl -s -H "Authorization: token $GITHUB_MIRROR_TOKEN" \
+    #    "https://api.github.com/repos/UvA-FNWI/CanvasGradeImport/pulls?head=$GITHUB_MIRROR_USER:mirror-sync&base=main" | jq '.[0].number')
+    #
+    #  if [ "$PR_EXISTS" = "null" ]; then
+    #    echo "Creating new PR..."
+    #    curl -s -X POST -H "Authorization: token $GITHUB_MIRROR_TOKEN" \
+    #      -d '{"title":"[SYNC] GitLab → GitHub","head":"mirror-sync","base":"main","body":"Automated mirror from GitLab"}' \
+    #      https://api.github.com/repos/UvA-FNWI/CanvasGradeImport/pulls
+    #  else
+    #    echo "PR #$PR_EXISTS already exists; branch updated automatically."
+    #  fi
