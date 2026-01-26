@@ -43,7 +43,7 @@ sync_with_github:
     - git checkout -B main origin/main
 
     # Merge GitHub → GitLab (fail loudly on conflict)
-    - git merge github/main --no-edit
+    - git merge github/main --no-edit || git merge github/main --allow-unrelated-histories --no-edit
 
     # Only push if something actually changed
     - |
