@@ -1,0 +1,57 @@
+stages:
+  - sync
+
+sync_with_github:
+  stage: sync
+  image: alpine/git
+
+  # Serialize all syncs
+  resource_group: github-mirror
+
+  rules:
+    # Only sync main
+    - if: '$CI_COMMIT_BRANCH != "main"'
+      when: never
+
+    # Prevent mirror loops
+    - if: '$CI_COMMIT_MESSAGE =~ /\[SYNC\]/'
+      when: never
+
+    # Auto-sync on push to main
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+      when: on_success
+
+    # Allow manual trigger
+    - when: manual
+      allow_failure: false
+
+  script:
+    - set -e
+
+    - git config user.name "GitLab CI Mirror"
+    - git config user.email "noreply@gitlab-mirror.local"
+
+    # Add GitHub remote (safe if already exists)
+    - git remote add github https://$GITHUB_MIRROR_USER:$GITHUB_MIRROR_TOKEN@github.com/UvA-FNWI/CanvasGradeImport.git || true
+
+    # Fetch latest state
+    - git fetch origin
+    - git fetch github
+
+    # Ensure correct branch
+    - git checkout main
+
+    # Merge GitHub → GitLab (fail loudly on conflict)
+    - git merge github/main --no-edit
+
+    # Only push if something actually changed
+    - |
+      if git diff --quiet HEAD@{1} HEAD; then
+        echo "No changes from GitHub to sync."
+      else
+        git commit -am "[SYNC] GitLab ↔ GitHub sync"
+      fi
+
+    # Push to GitHub
+    - git push github main
+
