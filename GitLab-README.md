@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This repo is a mirror of the original one in Github, created by Gerrit Oomens from FNWI: https://github.com/UvA-FNWI/CanvasGradeImport
+This repo (https://gitlab.ic.uva.nl/canvas/canvasgradeimport-cra-mirror) is a mirror of the original one in Github, created by Gerrit Oomens from FNWI: https://github.com/UvA-FNWI/CanvasGradeImport
 
 ## How it works.
 
