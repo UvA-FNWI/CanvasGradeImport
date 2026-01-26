@@ -1,26 +1,24 @@
 stages:
   - sync
 
+# -------------------------------
+# JOB 1: GitLab -> GitHub (push to mirror PR branch)
+# -------------------------------
 sync_with_github:
   stage: sync
   image: alpine:3.19
-
-  # Serialize all syncs
-  resource_group: github-mirror
+  resource_group: github-mirror  # serialize all syncs
 
   rules:
-    # Only sync main
+    # Only run for main branch
     - if: '$CI_COMMIT_BRANCH != "main"'
       when: never
-
     # Prevent mirror loops
     - if: '$CI_COMMIT_MESSAGE =~ /\[SYNC\]/'
       when: never
-
-    # Auto-sync on push to main
+    # Run on push
     - if: '$CI_PIPELINE_SOURCE == "push"'
       when: on_success
-
     # Allow manual trigger
     - when: manual
       allow_failure: false
@@ -29,46 +27,90 @@ sync_with_github:
     - set -e
 
     # Install dependencies
-    - apk add --no-cache git curl jq
+    - apk add --no-cache git curl
 
+    # Configure CI identity
     - git config user.name "GitLab CI Mirror"
     - git config user.email "noreply@gitlab-mirror.local"
 
-    # Add GitHub remote (safe if already exists)
+    # Add GitHub remote
     - git remote add github https://$GITHUB_MIRROR_USER:$GITHUB_MIRROR_TOKEN@github.com/UvA-FNWI/CanvasGradeImport.git || true
 
     # Fetch both remotes
     - git fetch origin
     - git fetch github
 
-    # Create/reset local main branch from GitLab
+    # Checkout main branch from GitLab
     - git checkout -B main origin/main
 
-    # Merge GitHub main into GitLab main (allow unrelated histories on first merge) (fail loudly on conflict)
-    - git merge github/main --no-edit || git merge github/main --allow-unrelated-histories --no-edit
+    # Merge GitHub main into GitLab main (allow unrelated histories first time)
+    - git merge github/main --allow-unrelated-histories --no-edit || true
 
-    # Only commit if something actually changed
+    # Commit only if changes exist
     - |
-      # Only commit if there are real changes after the merge
       if [ -n "$(git status --porcelain)" ]; then
-        git commit -am "[SYNC] GitLab <-> GitHub sync"
+        git commit -am "[SYNC] GitLab ↔ GitHub sync"
       else
         echo "No changes from GitHub to sync."
       fi
 
-    # Push to a PR branch on GitHub instead of main
+    # Push to a dedicated PR branch on GitHub
     - git push github main:mirror-sync -f
 
-    # Check if a PR already exists from mirror-sync → main
-    #- |
-    #  PR_EXISTS=$(curl -s -H "Authorization: token $GITHUB_MIRROR_TOKEN" \
-    #    "https://api.github.com/repos/UvA-FNWI/CanvasGradeImport/pulls?head=$GITHUB_MIRROR_USER:mirror-sync&base=main" | jq '.[0].number')
-    #
-    #  if [ "$PR_EXISTS" = "null" ]; then
-    #    echo "Creating new PR..."
-    #    curl -s -X POST -H "Authorization: token $GITHUB_MIRROR_TOKEN" \
-    #      -d '{"title":"[SYNC] GitLab → GitHub","head":"mirror-sync","base":"main","body":"Automated mirror from GitLab"}' \
-    #      https://api.github.com/repos/UvA-FNWI/CanvasGradeImport/pulls
-    #  else
-    #    echo "PR #$PR_EXISTS already exists; branch updated automatically."
-    #  fi
+    # Create PR automatically (fails silently if it exists)
+    - |
+      curl -s -X POST -H "Authorization: token $GITHUB_MIRROR_TOKEN" \
+        -d '{"title":"[SYNC] GitLab → GitHub","head":"mirror-sync","base":"main","body":"Automated mirror from GitLab"}' \
+        https://api.github.com/repos/UvA-FNWI/CanvasGradeImport/pulls || true
+
+# -------------------------------
+# JOB 2: GitHub -> GitLab (pull merged PRs)
+# -------------------------------
+pull_github_into_gitlab:
+  stage: sync
+  image: alpine:3.19
+  resource_group: github-mirror  # serialize with the previous job
+
+  rules:
+    # Only run for main
+    - if: '$CI_COMMIT_BRANCH != "main"'
+      when: never
+    # Prevent mirror loops
+    - if: '$CI_COMMIT_MESSAGE =~ /\[SYNC\]/'
+      when: never
+    # Allow manual trigger
+    - when: manual
+      allow_failure: false
+
+  script:
+    - set -e
+
+    # Install git
+    - apk add --no-cache git
+
+    # Configure CI identity
+    - git config user.name "GitLab CI Mirror"
+    - git config user.email "noreply@gitlab-mirror.local"
+
+    # Add GitHub remote
+    - git remote add github https://$GITHUB_MIRROR_USER:$GITHUB_MIRROR_TOKEN@github.com/UvA-FNWI/CanvasGradeImport.git || true
+
+    # Fetch GitHub main
+    - git fetch github main
+
+    # Checkout local main
+    - git checkout main
+
+    # Merge GitHub main into GitLab main
+    - git merge github/main --no-edit || true
+
+    # Commit only if there are real changes
+    - |
+      if [ -n "$(git status --porcelain)" ]; then
+        git commit -am "[SYNC] GitHub → GitLab sync"
+      else
+        echo "No changes from GitHub to sync."
+      fi
+
+    # Push merged changes back to GitLab main
+    - git push origin main
