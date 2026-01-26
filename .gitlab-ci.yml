@@ -3,7 +3,7 @@ stages:
 
 sync_with_github:
   stage: sync
-  image: alpine/git
+  image: alpine:3.19
 
   # Serialize all syncs
   resource_group: github-mirror
@@ -27,6 +27,7 @@ sync_with_github:
 
   script:
     - set -e
+    - apk add --no-cache git
 
     - git config user.name "GitLab CI Mirror"
     - git config user.email "noreply@gitlab-mirror.local"
