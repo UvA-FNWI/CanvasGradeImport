@@ -40,7 +40,7 @@ sync_with_github:
     - git fetch github
 
     # Ensure correct branch
-    - git checkout main
+    - git checkout -B main origin/main
 
     # Merge GitHub → GitLab (fail loudly on conflict)
     - git merge github/main --no-edit
