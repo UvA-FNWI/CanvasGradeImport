@@ -49,7 +49,7 @@ sync_with_github:
     # Commit only if changes exist
     - |
       if [ -n "$(git status --porcelain)" ]; then
-        git commit -am "[SYNC] GitLab ↔ GitHub sync"
+        git commit -am "[SYNC] GitLab -> GitHub sync"
       else
         echo "No changes from GitHub to sync."
       fi
@@ -102,12 +102,12 @@ pull_github_into_gitlab:
     - git checkout -B main origin/main
 
     # Merge GitHub main into GitLab main
-    - git merge github/main --no-edit || true
+    - git merge github/main --allow-unrelated-histories --no-edit || true
 
     # Commit only if there are real changes
     - |
       if [ -n "$(git status --porcelain)" ]; then
-        git commit -am "[SYNC] GitHub → GitLab sync"
+        git commit -am "[SYNC] GitHub -> GitLab sync"
       else
         echo "No changes from GitHub to sync."
       fi
