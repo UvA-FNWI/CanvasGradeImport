@@ -113,4 +113,5 @@ pull_github_into_gitlab:
       fi
 
     # Push merged changes back to GitLab main
+    - git remote set-url origin https://$GITLAB_MIRROR_USER:$GITLAB_MIRROR_TOKEN@$CI_SERVER_HOST/$CI_PROJECT_PATH.git
     - git push origin main
