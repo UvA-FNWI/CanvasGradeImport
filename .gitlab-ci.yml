@@ -99,7 +99,7 @@ pull_github_into_gitlab:
     - git fetch github main
 
     # Checkout local main
-    - git checkout main
+    - git checkout -B main origin/main
 
     # Merge GitHub main into GitLab main
     - git merge github/main --no-edit || true
