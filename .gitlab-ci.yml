@@ -44,7 +44,7 @@ sync_with_github:
     - git checkout -B main origin/main
 
     # Merge GitHub main into GitLab main (allow unrelated histories first time)
-    - git merge github/main --allow-unrelated-histories --no-edit || true
+    - git merge github/main --allow-unrelated-histories --no-edit
 
     # Commit only if changes exist
     - |
@@ -102,7 +102,12 @@ pull_github_into_gitlab:
     - git checkout -B main origin/main
 
     # Merge GitHub main into GitLab main
-    - git merge github/main --allow-unrelated-histories --no-edit || true
+    - git merge github/main --allow-unrelated-histories --no-edit
+    - |
+      if git ls-files -u | grep .;
+        then echo "Merge conflicts detected. Aborting."
+        exit 1
+      fi
 
     # Commit only if there are real changes
     - |
