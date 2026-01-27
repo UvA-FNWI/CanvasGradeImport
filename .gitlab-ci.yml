@@ -44,7 +44,7 @@ sync_with_github:
     - git checkout -B main origin/main
 
     # Merge GitHub main into GitLab main (allow unrelated histories first time)
-    - echo "Using .gitattributes merge rules: GitLab version of .gitlab-ci.yml always has precedence."
+    - echo "Using .gitattributes merge rules: GitLab version of .gitlab-ci.yml always has precedience."
     - git merge github/main --allow-unrelated-histories --no-edit
 
     # Commit only if changes exist
