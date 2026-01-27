@@ -6,12 +6,13 @@ This repo (https://gitlab.ic.uva.nl/canvas/canvasgradeimport-cra-mirror) is a mi
 
 ## How it works.
 
-The sync works via a CI pipeline. This means that the full logic can be found in .gitlab-ci.yml
+The basic idea is that changed made in GitLab are automatically pushed to GitHub via a CI pipeline. That creates a PR in GitHub. Once that's been reviewed and merged, you can manually trigger the second job in the CI pipeline in GitLab to sync the other way: from Github to Gitlab, just in case anyone made changes in Github in the meantime.
+
+Since the sync works via a CI pipeline, this means that the full logic can be found in .gitlab-ci.yml
 
 In there, there's a github username an token (currently set up to use Doris's user and token, which live in the CI/CD variables in Gitlab).
 
 Ideally, no one makes changes in GitHub, but if someone does, it's still not the end of the world.
-To be on the safe side in case someone did make changes in GitHub, before you make changes in GitLab, always run the pipeline manually. See Case 2 below why.
 
 Here are two cases that illustrate how the communication happens:
 
@@ -37,6 +38,8 @@ Here are two cases that illustrate how the communication happens:
 
 💡 This is why the manual sync button matters.
 No one *should* edit things in GitHub, but you never know.
+
+Documentation: https://uvahva.atlassian.net/wiki/spaces/CM/pages/76841879/Cheatsheet+Cijferregistratie+CRA
 
 ## Things to note
 
