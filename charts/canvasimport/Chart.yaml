@@ -1,0 +1,6 @@
+apiVersion: v2
+name: canvasimport
+description: Canvas import/export scripts
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
